@@ -112,7 +112,7 @@ The qTESLA team is integrated by the following researchers from industry and aca
 (in alphabetical order):
 
 - Sedat Akleylek, Ondokuz Mayis University, Turkey
-- Erdem Alkim, Ege University, Turkey
+- Erdem Alkim, Ondokuz Mayis University, Turkey
 - Paulo S. L. M. Barreto, University of Washington Tacoma, USA
 - Nina Bindel, Technische Universität Darmstadt, Germany
 - Johannes Buchmann, Technische Universität Darmstadt, Germany
