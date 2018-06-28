@@ -206,7 +206,7 @@ void sample_gauss_poly(int64_t *x, const unsigned char *seed, int nonce)
         y = 0;
         for (i = 0; i < 12; i++) {
           c = s - cdt[i][1];
-          uint64_t b = (((c & b) & 1) + ((cdt[i][1]) >> 1) + (c >> 1)) >> 63;
+          uint64_t b = (((c & cdt[i][1]) & 1) + ((cdt[i][1]) >> 1) + (c >> 1)) >> 63;
           // Least significant bits of all cdt[i][0] are zero: overflow cannot occur at this point
           c = r - (cdt[i][0] + b);
           y += ~(c >> (63)) & 1LL;
