@@ -222,14 +222,14 @@ static int test_v(poly v)
     // If v[i] > PARAM_Q/2 then v[i] -= PARAM_Q
     mask = (int64_t)(PARAM_Q/2 - v[i]) >> 63;
     val = ((v[i]-PARAM_Q) & mask) | (v[i] & ~mask);
-    // If (Abs(val) > PARAM_Q/2 - PARAM_REJECTION) then t0 = 1, else t0 = 0
-    t0 = (uint64_t)((int64_t)(PARAM_Q/2 - PARAM_REJECTION) - (int64_t)Abs(val)) >> 63;
+    // If (Abs(val) < PARAM_Q/2 - PARAM_REJECTION) then t0 = 0, else t0 = 1
+    t0 = (uint64_t)(~((int64_t)Abs(val) - (int64_t)(PARAM_Q/2 - PARAM_REJECTION))) >> 63;
                      
     left = val;
     val = (int32_t)((val + (1<<(PARAM_D-1))-1) >> PARAM_D); 
     val = left - (val << PARAM_D);
-    // If (Abs(val) > (1<<(PARAM_D-1))-PARAM_REJECTION) then t1 = 1, else t1 = 0 
-    t1 = (uint64_t)((int64_t)((1<<(PARAM_D-1))-PARAM_REJECTION) - (int64_t)Abs(val)) >> 63; 
+    // If (Abs(val) < (1<<(PARAM_D-1))-PARAM_REJECTION) then t1 = 0, else t1 = 1 
+    t1 = (uint64_t)(~((int64_t)Abs(val) - (int64_t)((1<<(PARAM_D-1))-PARAM_REJECTION))) >> 63; 
 
     if ((t0 | t1) == 1)  // Returns 1 if any of the two tests failed
       return 1;
@@ -252,7 +252,7 @@ static int test_z(poly z)
 
 
 static int check_ES(poly p, int bound)
-{ // Checks the generated secret polynomial s
+{ // Checks the generated polynomial e or s
   // Returns 0 if ok, otherwise returns 1
   unsigned int i, j, sum = 0, limit = PARAM_N;
   int16_t temp, mask, list[PARAM_N];
