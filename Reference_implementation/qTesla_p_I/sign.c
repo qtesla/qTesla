@@ -473,9 +473,9 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen, const unsigned cha
 	  continue;
 
     // Copy message to signature package, and pack signature
-    memcpy(sm, m, mlen);
+    memcpy(sm+CRYPTO_BYTES, m, mlen);
     *smlen = CRYPTO_BYTES + mlen; 
-    encode_sig(sm+mlen, c, z);
+    encode_sig(sm, c, z);
 
     return 0;
   }
@@ -507,7 +507,7 @@ int crypto_sign_open(unsigned char *m, unsigned long long *mlen, const unsigned 
 
   if (smlen < CRYPTO_BYTES) return -1;
 
-  decode_sig(c, z, sm+smlen-CRYPTO_BYTES);
+  decode_sig(c, z, sm);
   if (test_z(z) != 0) return -2;   // Check norm of z
   decode_pk(pk_t, seed, pk);
   poly_uniform(a, seed);
@@ -519,13 +519,13 @@ int crypto_sign_open(unsigned char *m, unsigned long long *mlen, const unsigned 
     sparse_mul32(&Tc[k*PARAM_N], pk_t+(k*PARAM_N), pos_list, sign_list);
     poly_sub(&w[k*PARAM_N], &w[k*PARAM_N], &Tc[k*PARAM_N]);
   }    
-  hash_vm(c_sig, w, sm, ((int)smlen - (int)CRYPTO_BYTES));;
+  hash_vm(c_sig, w, sm+CRYPTO_BYTES, ((int)smlen - (int)CRYPTO_BYTES));;
 
   // Check if the calculated c matches c from the signature
   if (memcmp(c, c_sig, CRYPTO_C_BYTES)) return -3;
   
   *mlen = smlen-CRYPTO_BYTES;
-  memcpy(m, sm, *mlen);
+  memcpy(m, sm+CRYPTO_BYTES, *mlen);
 
   return 0;
 }
