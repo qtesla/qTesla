@@ -1,7 +1,12 @@
 CC = /usr/bin/gcc
-CFLAGS = -std=gnu11 -O3 -march=native -fomit-frame-pointer #-Wall -Wextra 
-CFLAGS_KATS = -std=gnu11 -O2 -march=native -fomit-frame-pointer
+CFLAGS = -std=gnu11 -O3 -march=native -fomit-frame-pointer #-Wall -Wextra
+CFLAGS_KATS = -std=gnu11 -O2 -march=native -fomit-frame-pointer 
 LDFLAGS=-lm -L/usr/lib/ -lssl -lcrypto 
+
+DFLAG=
+ifeq "$(DEBUG)" "TRUE"
+    DFLAG=-DDEBUG
+endif
 
 SOURCE = sign.c sample.c poly.c consts.c sha3/fips202.c
 HEADER = api.h params.h sample.h sha3/fips202.h
@@ -14,7 +19,7 @@ HEADER_KATS = tests/rng.h
 all: test_qtesla PQCgenKAT_sign PQCtestKAT_sign
 
 test_qtesla: $(SOURCE) $(SOURCE_TEST) $(HEADER)
-	$(CC) $(CFLAGS) $(SOURCE) $(SOURCE_TEST) -DDEBUG  $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(SOURCE) $(SOURCE_TEST) $(DFLAG) $(LDFLAGS) -o $@
 
 PQCgenKAT_sign: $(SOURCE) $(SOURCE_KATS_GEN) $(HEADER) $(HEADER_KATS)
 	$(CC) $(CFLAGS_KATS) $(SOURCE) $(SOURCE_KATS_GEN) $(LDFLAGS) -o $@
