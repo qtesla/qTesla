@@ -99,6 +99,8 @@ void rndbytes(unsigned char *x,unsigned long long xlen)
 }
 
 
+#ifdef DEBUG  
+
 int print_accrates()
 {
   int r;
@@ -130,6 +132,8 @@ int print_accrates()
   return 0;
 }
 
+#endif
+
 
 int main(void)
 {
@@ -146,8 +150,10 @@ int main(void)
   printf("\nCRYPTO_PUBLICKEY_BYTES: %d\n", CRYPTO_PUBLICKEYBYTES);
   printf("CRYPTO_SECRETKEY_BYTES: %lu\n", CRYPTO_SECRETKEYBYTES);
   printf("CRYPTO_SIGNATURE_BYTES: %d\n\n", CRYPTO_BYTES);
-  
+
+#ifdef DEBUG  
   print_accrates();
+#endif
 
   for (i = 0; i < NRUNS; i++) {
     randombytes(mi, MLEN);
