@@ -121,7 +121,12 @@ void poly_uniform(poly_k a, const unsigned char *seed)
 
   cshake128_simple(buf, SHAKE128_RATE*nblocks, dmsp++, seed, CRYPTO_RANDOMBYTES);    
      
-  while (i < PARAM_K*PARAM_N) {    
+  while (i < PARAM_K*PARAM_N) {   
+    if (pos > SHAKE128_RATE*nblocks - 4*nbytes) {
+      nblocks = 1;
+      cshake128_simple(buf, SHAKE128_RATE*nblocks, dmsp++, seed, CRYPTO_RANDOMBYTES);    
+      pos = 0;
+    } 
     val1  = (*(uint32_t*)(buf+pos)) & mask;
     pos += nbytes;
     val2  = (*(uint32_t*)(buf+pos)) & mask;
@@ -138,10 +143,5 @@ void poly_uniform(poly_k a, const unsigned char *seed)
       a[i++] = reduce((int64_t)val3*PARAM_R2_INVN);
     if (val4 < PARAM_Q && i < PARAM_K*PARAM_N)
       a[i++] = reduce((int64_t)val4*PARAM_R2_INVN);
-    if (pos > SHAKE128_RATE*nblocks - 4*nbytes) {
-      nblocks = 1;
-      cshake128_simple(buf, SHAKE128_RATE*nblocks, dmsp++, seed, CRYPTO_RANDOMBYTES);    
-      pos = 0;
-    }
   }
 }
