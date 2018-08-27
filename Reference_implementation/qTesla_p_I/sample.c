@@ -10,20 +10,28 @@
 #include "random/random.h"
 
 #define round_double(x) (uint64_t)(x+0.5)
+#define NBLOCKS_SHAKE128  SHAKE128_RATE/(((PARAM_B_BITS+1)+7)/8)
 
 
 void sample_y(int64_t *y, const unsigned char *seed, int nonce)
 { // Sample polynomial y, such that each coefficient is in the range [-B,B]
-  unsigned int i, pos=0;
+  unsigned int i=0, pos=0, nblocks = PARAM_N;
   unsigned int nbytes = ((PARAM_B_BITS+1)+7)/8;
   unsigned char buf[PARAM_N*nbytes];
   int16_t dmsp = (int16_t)(nonce<<8);
     
-  cshake128_simple((uint8_t*)buf, PARAM_N*nbytes, dmsp, seed, CRYPTO_RANDOMBYTES);
+  cshake128_simple((uint8_t*)buf, PARAM_N*nbytes, dmsp++, seed, CRYPTO_RANDOMBYTES);
 
-  for (i=0; i<PARAM_N; i++) {
+  while (i<PARAM_N) {
+    if (pos >= nblocks*nbytes) {
+      nblocks = NBLOCKS_SHAKE128;
+      cshake128_simple((uint8_t*)buf, SHAKE128_RATE, dmsp++, seed, CRYPTO_RANDOMBYTES);
+      pos = 0;
+    }
     y[i]  = (*(uint32_t*)(buf+pos)) & ((1<<(PARAM_B_BITS+1))-1);
     y[i] -= PARAM_B;
+    if (y[i] != (1<<PARAM_B_BITS)-1)
+      i++;
     pos += nbytes;
   }
 }
