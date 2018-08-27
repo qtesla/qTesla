@@ -267,23 +267,22 @@ void encode_c(uint32_t *pos_list, int16_t *sign_list, unsigned char *c_bin)
     c[i] = 0;
 
   for (i=0; i<PARAM_W;) {     // Sample a unique position k times. Use two bytes
+    if (cnt > (RLENGTH - 3)) {
+      cshake128_simple(r, RLENGTH, dmsp++, c_bin, CRYPTO_RANDOMBYTES);  
+      cnt = 0; 
+    }
     pos = (r[cnt]<<8) | (r[cnt+1]);
     pos = pos & (PARAM_N-1);  // Position is in the range [0,N-1]
-    cnt += 2;
 
-    if (c[pos] == 0) {  // Position has not been set yet. Determine sign
-      if ((r[cnt] & 1) == 1)
+    if (c[pos] == 0) {        // Position has not been set yet. Determine sign
+      if ((r[cnt+2] & 1) == 1)
         c[pos] = -1;
       else
         c[pos] = 1;
       pos_list[i] = pos;
       sign_list[i] = c[pos];
       i++;
-      cnt++;
     }
-    if (cnt > (RLENGTH - 3)) {
-      cshake128_simple(r, RLENGTH, dmsp++, c_bin, CRYPTO_RANDOMBYTES);  
-      cnt = 0; 
-    }
+    cnt += 3;
   }
 }
