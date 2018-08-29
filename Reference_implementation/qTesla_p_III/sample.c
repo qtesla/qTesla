@@ -30,7 +30,7 @@ void sample_y(int64_t *y, const unsigned char *seed, int nonce)
     }
     y[i]  = (*(uint32_t*)(buf+pos)) & ((1<<(PARAM_B_BITS+1))-1);
     y[i] -= PARAM_B;
-    if (y[i] != (1<<PARAM_B_BITS)-1)
+    if (y[i] != (1<<PARAM_B_BITS))
       i++;
     pos += nbytes;
   }
