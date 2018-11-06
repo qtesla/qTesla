@@ -4,12 +4,19 @@
 
 #include "random.h"
 #include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/syscall.h>
+#if defined(__WINDOWS__)
+  #include <windows.h>
+  #include <bcrypt.h>
+#elif defined(__LINUX__)
+  #include <unistd.h>
+  #include <fcntl.h>
+  #include <sys/syscall.h>
+  static int lock = -1;
+  #define _GNU_SOURCE
+#endif
 
-#define _GNU_SOURCE
-static int lock = -1;
+#define passed 0 
+#define failed 1
 
 
 static __inline void delay(unsigned int count)
@@ -18,8 +25,15 @@ static __inline void delay(unsigned int count)
 }
 
 
-static void randombytes_internal(unsigned char* random_array, unsigned int nbytes)
+static int randombytes_internal(unsigned char* random_array, unsigned int nbytes)
 { // Generation of "nbytes" of random values
+    
+#if defined(__WINDOWS__)   
+  if (!BCRYPT_SUCCESS(BCryptGenRandom(NULL, random_array, (unsigned long)nbytes, BCRYPT_USE_SYSTEM_PREFERRED_RNG))) {
+    return failed;
+  }
+
+#elif defined(__LINUX__)
   int r, n = nbytes, count = 0;
     
   if (lock == -1) {
@@ -41,9 +55,12 @@ static void randombytes_internal(unsigned char* random_array, unsigned int nbyte
     count += r;
     n -= r;
   }
+#endif
+
+    return passed;
 }
 
-#ifdef SYS_getrandom
+#if defined(__LINUX__) && defined(SYS_getrandom)
 
 void randombytes(unsigned char* random_array, unsigned int nbytes)
 { // Generation of "nbytes" of random values

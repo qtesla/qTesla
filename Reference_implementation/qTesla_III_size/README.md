@@ -1,22 +1,29 @@
-# Reference implementation for qTESLA-III-size
+# Reference implementation of qTESLA-III-size in portable C
 
-To compile:
+# Linux
 
-make
+To compile, do:
 
-This generates three executables "test\_qtesla", "PQCtestKAT\_sign" and "PQCgenKAT\_sign".
+make 
+
+which by default sets ARCH=x64, CC=gcc and DEBUG=FALSE, or do:
+
+make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
+
+The following executables are generated: "test\_qtesla-III-size", "PQCtestKAT\_sign-III-size"
+and "PQCgenKAT\_sign-III-size".
 
 To get cycle counts for key generation, signing and verification, execute:
 
-./test\_qtesla
+./test\_qtesla-III-size
 
 To test against known answer values in the KAT folder, execute:
 
-./PQCtestKAT\_sign
+./PQCtestKAT\_sign-III-size
 
 To generate new KAT files, execute:
 
-./PQCgenKAT\_sign
+./PQCgenKAT\_sign-III-size
 
-
+Using DEBUG=TRUE generates statistics on acceptance rates and timings for internal functions. 
 
