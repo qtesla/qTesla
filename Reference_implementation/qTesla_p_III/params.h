@@ -18,20 +18,19 @@
 #define PARAM_BARR_DIV 34
 #define PARAM_B 8388607
 #define PARAM_B_BITS 23
-
+#define PARAM_S_BITS 8
 #define PARAM_K 5
 #define PARAM_SIGMA_E PARAM_SIGMA
-
-#define PARAM_W 40
+#define PARAM_H 40
 #define PARAM_D 24
-
-#define PARAM_GEN_A 180
-	
+#define PARAM_GEN_A 180	
 #define PARAM_KEYGEN_BOUND_E 901
 #define PARAM_REJECTION PARAM_KEYGEN_BOUND_E
 #define PARAM_KEYGEN_BOUND_S 901
 #define PARAM_U PARAM_KEYGEN_BOUND_S
-
 #define PARAM_R2_INVN 851423148
+#define SHAKE shake256
+#define cSHAKE cshake256_simple
+#define SHAKE_RATE SHAKE256_RATE
 
 #endif

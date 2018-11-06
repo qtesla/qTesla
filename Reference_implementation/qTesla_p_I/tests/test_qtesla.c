@@ -10,11 +10,17 @@
 #include "cpucycles.h"
 #include "../api.h"
 #include "../poly.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "../pack.h"
+#include "../sample.h"
+#include "../params.h"
+#include "../sha3/fips202.h"
+  
+#if (OS_TARGET == OS_LINUX)
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <fcntl.h>
+  #include <unistd.h>
+#endif
 
 #define MLEN 59
 #define NRUNS 5000
@@ -50,11 +56,10 @@ static unsigned long long average(unsigned long long *t, size_t tlen)
 
 static void print_results(const char *s, unsigned long long *t, size_t tlen)
 {
-  size_t i;
   printf("%s", s);
   printf("\n");
-  printf("median:  %llu cycles\n", median(t, tlen));
-  printf("average: %llu cycles\n", average(t, tlen-1));
+  printf("median:  %llu ", median(t, tlen));  print_unit; printf("\n");
+  printf("average: %llu ", average(t, tlen-1));  print_unit; printf("\n");
   printf("\n");
 }
 
@@ -70,33 +75,6 @@ extern unsigned long long rejwctr;
 extern unsigned long long rejyzctr;
 extern unsigned long long ctr_keygen;
 extern unsigned long long ctr_sign;
-
-static int fd = -1;
-
-
-void rndbytes(unsigned char *x,unsigned long long xlen)
-{
-  int i;
-
-  if (fd == -1) {
-    for (;;) {
-      fd = open("/dev/urandom",O_RDONLY);
-      if (fd != -1) break;
-      sleep(1);
-    }
-  }
-
-  while (xlen > 0) {
-    if (xlen < 1048576) i = xlen; else i = 1048576;
-    i = read(fd,x,i);
-    if (i < 1) {
-      sleep(1);
-      continue;
-    }
-    x += i;
-    xlen -= i;
-  }
-}
 
 
 #ifdef DEBUG  
@@ -148,7 +126,7 @@ int main(void)
   printf("===========================================================================================\n");
 
   printf("\nCRYPTO_PUBLICKEY_BYTES: %d\n", CRYPTO_PUBLICKEYBYTES);
-  printf("CRYPTO_SECRETKEY_BYTES: %lu\n", CRYPTO_SECRETKEYBYTES);
+  printf("CRYPTO_SECRETKEY_BYTES: %d\n", (int)CRYPTO_SECRETKEYBYTES);
   printf("CRYPTO_SIGNATURE_BYTES: %d\n\n", CRYPTO_BYTES);
 
 #ifdef DEBUG  
@@ -169,7 +147,7 @@ int main(void)
     cycles2[i] = cpucycles();
     valid = crypto_sign_open(mo, &mlen, sm, smlen, pk);
     cycles2[i] = cpucycles() - cycles2[i];
-
+    
     if (valid != 0) {
       printf("Signature verification FAILED. \n");
       return -1;

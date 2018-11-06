@@ -6,26 +6,28 @@
 
 #include "api.h"
 #include "sample.h"
+#include "params.h"
 #include "sha3/fips202.h"
 #include "random/random.h"
 
-#define round_double(x) (uint64_t)(x+0.5)
-#define NBLOCKS_SHAKE128  SHAKE128_RATE/(((PARAM_B_BITS+1)+7)/8)
+#define round_double(x)   (uint64_t)(x+0.5)
+#define NBLOCKS_SHAKE     SHAKE_RATE/(((PARAM_B_BITS+1)+7)/8)
+#define BPLUS1BYTES       ((PARAM_B_BITS+1)+7)/8
 
 
-void sample_y(int64_t *y, const unsigned char *seed, int nonce)
+void sample_y(poly y, const unsigned char *seed, int nonce)
 { // Sample polynomial y, such that each coefficient is in the range [-B,B]
   unsigned int i=0, pos=0, nblocks = PARAM_N;
-  unsigned int nbytes = ((PARAM_B_BITS+1)+7)/8;
-  unsigned char buf[PARAM_N*nbytes];
+  unsigned char buf[PARAM_N*BPLUS1BYTES];
+  unsigned int nbytes = BPLUS1BYTES;
   int16_t dmsp = (int16_t)(nonce<<8);
     
-  cshake128_simple((uint8_t*)buf, PARAM_N*nbytes, dmsp++, seed, CRYPTO_RANDOMBYTES);
+  cSHAKE((uint8_t*)buf, PARAM_N*nbytes, dmsp++, seed, CRYPTO_RANDOMBYTES);
 
   while (i<PARAM_N) {
     if (pos >= nblocks*nbytes) {
-      nblocks = NBLOCKS_SHAKE128;
-      cshake128_simple((uint8_t*)buf, SHAKE128_RATE, dmsp++, seed, CRYPTO_RANDOMBYTES);
+      nblocks = NBLOCKS_SHAKE;
+      cSHAKE((uint8_t*)buf, SHAKE_RATE, dmsp++, seed, CRYPTO_RANDOMBYTES);
       pos = 0;
     }
     y[i]  = (*(uint32_t*)(buf+pos)) & ((1<<(PARAM_B_BITS+1))-1);
@@ -33,6 +35,42 @@ void sample_y(int64_t *y, const unsigned char *seed, int nonce)
     if (y[i] != (1<<PARAM_B_BITS))
       i++;
     pos += nbytes;
+  }
+}
+
+
+void encode_c(uint32_t *pos_list, int16_t *sign_list, unsigned char *c_bin)
+{ // Encoding of c' by mapping the output of the hash function H to an N-element vector with entries {-1,0,1} 
+  int i, pos, cnt=0;
+  int16_t c[PARAM_N];
+  unsigned char r[SHAKE128_RATE];
+  uint16_t dmsp=0;
+  
+  // Use the hash value as key to generate some randomness
+  cshake128_simple(r, SHAKE128_RATE, dmsp++, c_bin, CRYPTO_RANDOMBYTES);
+
+  // Use rejection sampling to determine positions to be set in the new vector
+  for (i=0; i<PARAM_N; i++)
+    c[i] = 0;
+
+  for (i=0; i<PARAM_H;) {     // Sample a unique position k times. Use two bytes
+    if (cnt > (SHAKE128_RATE - 3)) {
+      cshake128_simple(r, SHAKE128_RATE, dmsp++, c_bin, CRYPTO_RANDOMBYTES);  
+      cnt = 0; 
+    }
+    pos = (r[cnt]<<8) | (r[cnt+1]);
+    pos = pos & (PARAM_N-1);  // Position is in the range [0,N-1]
+
+    if (c[pos] == 0) {        // Position has not been set yet. Determine sign
+      if ((r[cnt+2] & 1) == 1)
+        c[pos] = -1;
+      else
+        c[pos] = 1;
+      pos_list[i] = pos;
+      sign_list[i] = c[pos];
+      i++;
+    }
+    cnt += 3;
   }
 }
 
@@ -188,15 +226,15 @@ void sample_gauss_poly(int64_t *x, const unsigned char *seed, int nonce)
   unsigned char seed_ex[PARAM_N*8];
   int64_t i, j=0, x_ind;
   int64_t *buf = (int64_t*)seed_ex;
-  int64_t sign, k, l, bitsremained, rbits, y, z;
-  uint64_t r, s, t, c;
+  int64_t sign, k, bitsremained, rbits, y, z;
+  uint64_t r, s, c;
   int16_t dmsp = (int16_t)(nonce<<8);
 
-  cshake128_simple(seed_ex, PARAM_N*8, dmsp++, seed, CRYPTO_RANDOMBYTES);
+  cSHAKE(seed_ex, PARAM_N*8, dmsp++, seed, CRYPTO_RANDOMBYTES);
 
   for (x_ind=0; x_ind<PARAM_N; x_ind++){
     if ((j+46) > (PARAM_N)){
-      cshake128_simple((uint8_t*)buf, PARAM_N*8, dmsp++, seed, CRYPTO_RANDOMBYTES);
+      cSHAKE((uint8_t*)buf, PARAM_N*8, dmsp++, seed, CRYPTO_RANDOMBYTES);
       j=0;
     }
     do {
@@ -249,42 +287,5 @@ void sample_gauss_poly(int64_t *x, const unsigned char *seed, int nonce)
     sign = rbits >> 63; rbits <<= 1; bitsremained--;
     k = ((k << 1) & sign) - k;
     x[x_ind] = (k<<48)>>48;
-  }
-}
-
-
-void encode_c(uint32_t *pos_list, int16_t *sign_list, unsigned char *c_bin)
-{ // Encoding of c' by mapping the output of the hash function H to an N-element vector with entries {-1,0,1} 
-  int i, pos, cnt=0;
-  int16_t c[PARAM_N];
-  const int RLENGTH = SHAKE128_RATE;
-  unsigned char r[RLENGTH];
-  uint16_t dmsp=0;
-  
-  // Use the hash value as key to generate some randomness
-  cshake128_simple(r, RLENGTH, dmsp++, c_bin, CRYPTO_RANDOMBYTES);
-
-  // Use rejection sampling to determine positions to be set in the new vector
-  for (i=0; i<PARAM_N; i++)
-    c[i] = 0;
-
-  for (i=0; i<PARAM_W;) {     // Sample a unique position k times. Use two bytes
-    if (cnt > (RLENGTH - 3)) {
-      cshake128_simple(r, RLENGTH, dmsp++, c_bin, CRYPTO_RANDOMBYTES);  
-      cnt = 0; 
-    }
-    pos = (r[cnt]<<8) | (r[cnt+1]);
-    pos = pos & (PARAM_N-1);  // Position is in the range [0,N-1]
-
-    if (c[pos] == 0) {        // Position has not been set yet. Determine sign
-      if ((r[cnt+2] & 1) == 1)
-        c[pos] = -1;
-      else
-        c[pos] = 1;
-      pos_list[i] = pos;
-      sign_list[i] = c[pos];
-      i++;
-    }
-    cnt += 3;
   }
 }
