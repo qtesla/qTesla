@@ -42,14 +42,14 @@ void decode_sk(unsigned char *seeds, int16_t *s, int16_t *e, const unsigned char
     s[i+0] = (int16_t)sk[j+0]        | (int16_t)(((int32_t)sk[j+1] << 30) >> 22);
     s[i+1] = (int16_t)(sk[j+1] >> 2) | (int16_t)(((int32_t)sk[j+2] << 28) >> 22);
     s[i+2] = (int16_t)(sk[j+2] >> 4) | (int16_t)(((int32_t)sk[j+3] << 26) >> 22);
-    s[i+3] = (int16_t)(sk[j+3] >> 6) | (int16_t)(char)sk[j+4] << 2;
+    s[i+3] = (int16_t)(sk[j+3] >> 6) | (int16_t)(signed char)sk[j+4] << 2;
     j += 5;
   } 
   for (i=0; i<PARAM_N; i+=4) {
     e[i+0] = (int16_t)sk[j+0]        | (int16_t)(((int32_t)sk[j+1] << 30) >> 22);
     e[i+1] = (int16_t)(sk[j+1] >> 2) | (int16_t)(((int32_t)sk[j+2] << 28) >> 22);
     e[i+2] = (int16_t)(sk[j+2] >> 4) | (int16_t)(((int32_t)sk[j+3] << 26) >> 22);
-    e[i+3] = (int16_t)(sk[j+3] >> 6) | (int16_t)(char)sk[j+4] << 2;
+    e[i+3] = (int16_t)(sk[j+3] >> 6) | (int16_t)(signed char)sk[j+4] << 2;
     j += 5;
   }  
   memcpy(seeds, &sk[2*PARAM_S_BITS*PARAM_N/8], 2*CRYPTO_SEEDBYTES);
