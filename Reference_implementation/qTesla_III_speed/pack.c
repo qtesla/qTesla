@@ -54,7 +54,7 @@ void decode_sk(unsigned char *seeds, int16_t *s, int16_t *e, const unsigned char
     s[i+4] = (int16_t)(sk[j+4] >> 4) | (int16_t)(((int32_t)sk[j+5] << 27) >> 23);
     s[i+5] = (int16_t)(sk[j+5] >> 5) | (int16_t)(((int32_t)sk[j+6] << 26) >> 23);
     s[i+6] = (int16_t)(sk[j+6] >> 6) | (int16_t)(((int32_t)sk[j+7] << 25) >> 23);
-    s[i+7] = (int16_t)(sk[j+7] >> 7) | (int16_t)(char)sk[j+8] << 1;
+    s[i+7] = (int16_t)(sk[j+7] >> 7) | (int16_t)(signed char)sk[j+8] << 1;
     j += 9;
   }
   for (i=0; i<PARAM_N; i+=8) {
@@ -65,7 +65,7 @@ void decode_sk(unsigned char *seeds, int16_t *s, int16_t *e, const unsigned char
     e[i+4] = (int16_t)(sk[j+4] >> 4) | (int16_t)(((int32_t)sk[j+5] << 27) >> 23);
     e[i+5] = (int16_t)(sk[j+5] >> 5) | (int16_t)(((int32_t)sk[j+6] << 26) >> 23);
     e[i+6] = (int16_t)(sk[j+6] >> 6) | (int16_t)(((int32_t)sk[j+7] << 25) >> 23);
-    e[i+7] = (int16_t)(sk[j+7] >> 7) | (int16_t)(char)sk[j+8] << 1;
+    e[i+7] = (int16_t)(sk[j+7] >> 7) | (int16_t)(signed char)sk[j+8] << 1;
     j += 9;
   }   
   memcpy(seeds, &sk[2*PARAM_S_BITS*PARAM_N/8], 2*CRYPTO_SEEDBYTES);
