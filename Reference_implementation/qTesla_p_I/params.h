@@ -1,7 +1,7 @@
 /*************************************************************************************
 * qTESLA: an efficient post-quantum signature scheme based on the R-LWE problem
 *
-* Abstract: "qTesla-p-I" parameters
+* Abstract: provably-secure qTESLA parameters
 **************************************************************************************/
 
 #ifndef PARAMS_H

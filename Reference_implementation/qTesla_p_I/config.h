@@ -14,9 +14,12 @@
 
 // Definition of operating system
 
-#define OS_LINUX     1
+#define OS_WIN       1
+#define OS_LINUX     2
 
-#if defined(__LINUX__)          // Linux OS
+#if defined(__WINDOWS__)        // Microsoft Windows OS
+    #define OS_TARGET OS_WIN
+#elif defined(__LINUX__)        // Linux OS
     #define OS_TARGET OS_LINUX 
 #else
     #error -- "Unsupported OS"
@@ -25,10 +28,13 @@
 
 // Definition of compiler
 
-#define COMPILER_GCC     1
-#define COMPILER_CLANG   2
+#define COMPILER_VC      1
+#define COMPILER_GCC     2
+#define COMPILER_CLANG   3
 
-#if defined(__GNUC__)           // GNU GCC compiler
+#if defined(_MSC_VER)           // Microsoft Visual C compiler
+    #define COMPILER COMPILER_VC
+#elif defined(__GNUC__)         // GNU GCC compiler
     #define COMPILER COMPILER_GCC   
 #elif defined(__clang__)        // Clang compiler
     #define COMPILER COMPILER_CLANG
@@ -47,19 +53,27 @@
 #if defined(_AMD64_)
     #define TARGET TARGET_AMD64
     #define RADIX           64
+    #define RADIX32         32
     typedef uint64_t        digit_t;        // Unsigned 64-bit digit
+    typedef int64_t         sdigit_t;       // Signed 64-bit digit
 #elif defined(_X86_)
     #define TARGET TARGET_x86
     #define RADIX           32
+    #define RADIX32         32
     typedef uint32_t        digit_t;        // Unsigned 32-bit digit
+    typedef int32_t         sdigit_t;       // Signed 32-bit digit
 #elif defined(_ARM_)
     #define TARGET TARGET_ARM
     #define RADIX           32
+    #define RADIX32         32
     typedef uint32_t        digit_t;        // Unsigned 32-bit digit
+    typedef int32_t         sdigit_t;       // Signed 32-bit digit
 #elif defined(_ARM64_)
     #define TARGET TARGET_ARM64
     #define RADIX           64
+    #define RADIX32         32
     typedef uint64_t        digit_t;        // Unsigned 64-bit digit
+    typedef int64_t         sdigit_t;       // Signed 64-bit digit
 #else
     #error -- "Unsupported ARCHITECTURE"
 #endif
