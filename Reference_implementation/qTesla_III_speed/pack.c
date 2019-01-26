@@ -1,7 +1,7 @@
 /*************************************************************************************
 * qTESLA: an efficient post-quantum signature scheme based on the R-LWE problem
 *
-* Abstract: high-level functions of the signature scheme
+* Abstract: packing functions
 **************************************************************************************/
 
 #include <string.h>
@@ -107,7 +107,7 @@ void decode_pk(int32_t *pk, unsigned char *seedA, const unsigned char *pk_in)
 void encode_sig(unsigned char *sm, unsigned char *c, poly z)
 { // Encode signature sm
   unsigned int i, j=0;
-  digit32_t *t = (digit32_t*)z;
+  uint32_t *t = (uint32_t*)z;
   uint32_t *pt = (uint32_t*)sm;
   
   for (i=0; i<(PARAM_N*PARAM_D/32); i+=(PARAM_D/2)) {
