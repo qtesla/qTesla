@@ -1,8 +1,7 @@
 # Lattice-based digital signature scheme **qTESLA**
 
-This project is part of the submission of the post-quantum lattice-based digital signature
-scheme **qTESLA** to the NIST Post-Quantum Standardization
-project (2017). 
+This is the software package of the post-quantum lattice-based digital signature
+scheme **qTESLA** submitted to the NIST Post-Quantum Standardization project (2017). 
 
 **qTESLA** is a family of post-quantum signature schemes based on the hardness of the decisional
 Ring Learning With Errors (R-LWE) problem. 
@@ -35,17 +34,22 @@ The full specification of the scheme can be found in the qTESLA [`website`](http
 
 - [`KAT`](KAT/)                     : Contains the Known Answer Tests
 - [`Reference_Implementation`](Reference_Implementation) : Contains the reference implementations
+- [`Additional_Implementations/avx2`](AVX2_Implementation) : Contains the AVX2-optimized implementations
 
 ## Contents of subfolders
 
 ### Subfolder `KAT`:
-This folder contains known answer test results for the proposed parameter sets.
+This folder contains known answer test results for the proposed parameter sets, 
+classified by platorm support (xx = 32 or 64 bits) and implementation (reference or AVX2).
 
-- `PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
-- `PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
-- `PQCsignKAT_qTesla-III-speed.rsp` : Known answer test results for qTesla-III-speed
-- `PQCsignKAT_qTesla-p-I.rsp`: Known answer test results for qTesla-p-I
-- `PQCsignKAT_qTesla-p-III.rsp` : Known answer test results for qTesla-p-III
+- `ref/<KATxx>/PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
+- `ref/<KATxx>/PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
+- `ref/<KATxx>/PQCsignKAT_qTesla-III-speed.rsp` : Known answer test results for qTesla-III-speed
+- `ref/<KATxx>/PQCsignKAT_qTesla-p-I.rsp`: Known answer test results for qTesla-p-I
+- `ref/<KATxx>/PQCsignKAT_qTesla-p-III.rsp` : Known answer test results for qTesla-p-III
+- `avx2/<KATxx>/PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
+- `avx2/<KATxx>/PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
+- `avx2/<KATxx>/PQCsignKAT_qTesla-III-speed.rsp` : Known answer test results for qTesla-III-speed
 
 ### Subfolder `Reference_Implementation`:
 This folder contains five subfolders which contain the reference implementations
@@ -62,13 +66,32 @@ for the proposed parameter sets:
 - "qTesla-p-III" : Reference implementation of qTesla-p-III with parameters for
                NIST’s security category 3
 
+### Subfolder `Additional_Implementations/avx2`:
+This folder contains three subfolders which contain the additional AVX2 implementations
+for the heuristic parameter sets:
+
+- "qTesla-I" : AVX2 implementation of qTesla-I with parameters for
+               NIST’s security category 1
+- "qTesla-III-size" : AVX2 implementation of qTesla-III-size with parameters for
+               NIST’s security category 3
+- "qTesla-III-speed" : AVX2 implementation of qTesla-III-speed with parameters for
+               NIST’s security category 3
+
 ## Instructions for Linux
 
-Each implementation directory has its own makefile, and can be compiled by executing
+Each implementation directory has its own makefile, and can be compiled by executing,
+for the reference implementations:
 
 ```sh
-$ cd Reference_implementation/qTesla_{SET}
+$ cd Reference_Implementation/qTesla_{SET}
 $ make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
+```
+
+For the AVX2 implementations: 
+
+```sh
+$ cd Additional_Implementations/avx2/qTesla_{SET}
+$ make CC=[gcc/clang] DEBUG=[TRUE/FALSE]
 ```
 
 By default (i.e., just running "make"), the compilation is done with gcc for x64, 
@@ -99,7 +122,7 @@ Precomputed KAT values can be tested against the code by executing:
 
 ## License
 
-The qTESLA source code and header files are released to the public domain.
+This software is licensed under the MIT License; see [`License`](LICENSE) for details.
 The software also includes third-party code licensed as follows:
 
 - `src/sha3/fips202.c`: public domain
