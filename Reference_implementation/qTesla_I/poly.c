@@ -16,7 +16,7 @@ void poly_uniform(poly a, const unsigned char *seed)
 { // Generation of polynomial "a"
   unsigned int pos=0, i=0, nbytes = (PARAM_Q_LOG+7)/8;
   unsigned int nblocks=PARAM_GEN_A;
-  digit32_t val1, val2, val3, val4, mask = (1<<PARAM_Q_LOG)-1;
+  uint32_t val1, val2, val3, val4, mask = (1<<PARAM_Q_LOG)-1;
   unsigned char buf[SHAKE128_RATE*PARAM_GEN_A];
   uint16_t dmsp=0;
 
@@ -28,13 +28,13 @@ void poly_uniform(poly a, const unsigned char *seed)
       cshake128_simple(buf, SHAKE128_RATE*nblocks, dmsp++, seed, CRYPTO_RANDOMBYTES);    
       pos = 0;
     }  
-    val1  = (*(digit32_t*)(buf+pos)) & mask;
+    val1  = (*(uint32_t*)(buf+pos)) & mask;
     pos += nbytes;
-    val2  = (*(digit32_t*)(buf+pos)) & mask;
+    val2  = (*(uint32_t*)(buf+pos)) & mask;
     pos += nbytes;
-    val3  = (*(digit32_t*)(buf+pos)) & mask;
+    val3  = (*(uint32_t*)(buf+pos)) & mask;
     pos += nbytes;
-    val4  = (*(digit32_t*)(buf+pos)) & mask;
+    val4  = (*(uint32_t*)(buf+pos)) & mask;
     pos += nbytes;
     if (val1 < PARAM_Q && i < PARAM_N)
       a[i++] = reduce((int64_t)val1*PARAM_R2_INVN);
@@ -48,14 +48,14 @@ void poly_uniform(poly a, const unsigned char *seed)
 }
 
 
-sdigit32_t reduce(int64_t a)
+int32_t reduce(int64_t a)
 { // Montgomery reduction
   int64_t u;
 
   u = (a*PARAM_QINV) & 0xFFFFFFFF;
   u *= PARAM_Q;
   a += u;
-  return (sdigit32_t)(a>>32);
+  return (int32_t)(a>>32);
 }
 
 
@@ -68,7 +68,7 @@ void ntt(poly a, const poly w)
     for (jFirst=0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
       sdigit_t W = (sdigit_t)w[jTwiddle++];
       for (j=jFirst; j<jFirst+NumoProblems; j++) {
-        sdigit32_t temp = reduce((int64_t)W * a[j+NumoProblems]);
+        int32_t temp = reduce((int64_t)W * a[j+NumoProblems]);
         a[j + NumoProblems] = a[j] - temp;
         a[j] = temp + a[j];
       }
@@ -76,6 +76,15 @@ void ntt(poly a, const poly w)
   }
 }
 
+#if !defined(_qTESLA_I_)
+
+int32_t barr_reduce(int32_t a)
+{ // Barrett reduction
+  int32_t u = ((int64_t)a*PARAM_BARR_MULT)>>PARAM_BARR_DIV;
+  return a - (int32_t)u*PARAM_Q;
+}
+
+#endif
 
 void nttinv(poly a, const poly w)
 { // Inverse NTT transform
@@ -85,8 +94,15 @@ void nttinv(poly a, const poly w)
     for (jFirst = 0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
       sdigit_t W = (sdigit_t)w[jTwiddle++];
       for (j=jFirst; j<jFirst+NumoProblems; j++) {
-        sdigit32_t temp = a[j];
+        int32_t temp = a[j];
+#if defined(_qTESLA_I_)
         a[j] = temp + a[j + NumoProblems];
+#else
+        if (NumoProblems == 16) 
+          a[j] = barr_reduce(temp + a[j + NumoProblems]);
+        else
+          a[j] = temp + a[j + NumoProblems];
+#endif
         a[j + NumoProblems] = reduce((int64_t)W * (temp - a[j + NumoProblems]));
       }
     }
@@ -161,7 +177,7 @@ void poly_sub_reduce(poly result, const poly x, const poly y)
 * Name:        sparse_mul16
 * Description: performs sparse polynomial multiplication
 * Parameters:  inputs:
-*              - const unsigned char* sk: part of the secret key
+*              - const unsigned char* s: part of the secret key
 *              - const uint32_t pos_list[PARAM_H]: list of indices of nonzero elements in c
 *              - const int16_t sign_list[PARAM_H]: list of signs of nonzero elements in c
 *              outputs:

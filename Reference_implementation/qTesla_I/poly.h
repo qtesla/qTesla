@@ -5,10 +5,10 @@
 #include "config.h"
 #include <stdint.h>
 
-typedef sdigit32_t poly[PARAM_N];
+typedef int32_t poly[PARAM_N];
 
-sdigit32_t reduce(int64_t a);
-sdigit32_t barr_reduce(sdigit32_t a);
+int32_t reduce(int64_t a);
+int32_t barr_reduce(int32_t a);
 void ntt(poly a, const poly w);
 void nttinv(poly a, const poly w);
 void poly_mul(poly result, const poly x, const poly y);
