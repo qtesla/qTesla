@@ -1,7 +1,7 @@
 # Lattice-based digital signature scheme **qTESLA**
 
 This is the software package of the post-quantum lattice-based digital signature
-scheme **qTESLA** submitted to the NIST Post-Quantum Standardization project (2017). 
+scheme **qTESLA** for the NIST Post-Quantum Cryptography Standardization project. 
 
 **qTESLA** is a family of post-quantum signature schemes based on the hardness of the decisional
 Ring Learning With Errors (R-LWE) problem. 
@@ -33,8 +33,8 @@ The full specification of the scheme can be found in the qTESLA [`website`](http
 ## Contents
 
 - [`KAT`](KAT/)                     : Contains the Known Answer Tests
-- [`Reference_Implementation`](Reference_Implementation) : Contains the reference implementations
-- [`Additional_Implementations/avx2`](AVX2_Implementation) : Contains the AVX2-optimized implementations
+- [`Reference_implementation`](Reference_Implementation) : Contains the reference implementations
+- [`Additional_implementations/avx2`](AVX2_Implementation) : Contains the AVX2-optimized implementations
 
 ## Contents of subfolders
 
@@ -83,14 +83,14 @@ Each implementation directory has its own makefile, and can be compiled by execu
 for the reference implementations:
 
 ```sh
-$ cd Reference_Implementation/qTesla_{SET}
+$ cd Reference_implementation/qTesla_{SET}
 $ make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
 ```
 
 For the AVX2 implementations: 
 
 ```sh
-$ cd Additional_Implementations/avx2/qTesla_{SET}
+$ cd Additional_implementations/avx2/qTesla_{SET}
 $ make CC=[gcc/clang] DEBUG=[TRUE/FALSE]
 ```
 
