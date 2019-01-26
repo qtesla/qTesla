@@ -20,8 +20,8 @@ Concretely, **qTESLA** includes five parameter sets targeting two security level
 I  Heuristic qTESLA:
 
 * qTESLA-I: NIST's security category 1.
-* qTESLA-III-speed: NIST's security category 3 (option for speed).
-* qTESLA-III-size: NIST's security category 3 (option for size).
+* qTESLA-III-speed: NIST's security category 3 (optimized for speed).
+* qTESLA-III-size: NIST's security category 3 (optimized for size).
 
 II  Provably-secure qTESLA:
 
@@ -40,7 +40,7 @@ The full specification of the scheme can be found in the qTESLA [`website`](http
 
 ### Subfolder `KAT`:
 This folder contains known answer test results for the proposed parameter sets, 
-classified by platorm support (xx = 32 or 64 bits) and implementation (reference or AVX2).
+classified by platform support (xx = 32 or 64 bits) and implementation (reference or AVX2).
 
 - `ref/<KATxx>/PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
 - `ref/<KATxx>/PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
