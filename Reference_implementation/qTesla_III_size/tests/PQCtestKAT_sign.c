@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include "rng.h"
 #include "../api.h"
+#include "../config.h"
 
 
 #define	MAX_MARKER_LEN		50
@@ -41,7 +42,11 @@ main()
     FILE                *fp_rsp;
     unsigned char       pk_rsp[CRYPTO_PUBLICKEYBYTES], sk_rsp[CRYPTO_SECRETKEYBYTES];
     
-    sprintf(fn_rsp, "../../KAT/PQCsignKAT_%s.rsp", CRYPTO_ALGNAME);
+#if (RADIX == 32)
+    sprintf(fn_rsp, "../../KAT/ref/KAT32/PQCsignKAT_%s.rsp", CRYPTO_ALGNAME);
+#elif (RADIX == 64)
+    sprintf(fn_rsp, "../../KAT/ref/KAT64/PQCsignKAT_%s.rsp", CRYPTO_ALGNAME);
+#endif
     if ( (fp_rsp = fopen(fn_rsp, "r")) == NULL ) {
         printf("Couldn't open <%s> for read\n", fn_rsp);
         return KAT_FILE_OPEN_ERROR;

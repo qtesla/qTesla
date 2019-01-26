@@ -6,7 +6,6 @@
 #include "poly.h"
 
 void sample_y(poly y, const unsigned char *seed, int nonce);
-void sample_gauss_poly(poly x, const unsigned char *seed, int nonce);
 void encode_c(uint32_t *pos_list, int16_t *sign_list, unsigned char *c_bin);
 
 #endif
