@@ -1,7 +1,7 @@
 /*************************************************************************************
 * qTESLA: an efficient post-quantum signature scheme based on the R-LWE problem
 *
-* Abstract: high-level functions of the signature scheme
+* Abstract: packing functions
 **************************************************************************************/
 
 #include <string.h>
@@ -12,19 +12,18 @@
 
 void pack_sk(unsigned char *sk, poly s, poly_k e, unsigned char *seeds)
 { // Pack secret key sk
-  int i, k;
-  int8_t *isk = (int8_t *)sk;
+  unsigned int i, k;
 
   for (i=0; i<PARAM_N; i++)
-    isk[i] = (int8_t)s[i];
+    sk[i] = (unsigned char)s[i];
 
-  isk += PARAM_N;
+  sk += PARAM_N;
   for (k=0; k<PARAM_K; k++)
     for (i=0; i<PARAM_N; i++)
-      isk[k*PARAM_N+i] = (int8_t)e[k*PARAM_N+i];
+      sk[k*PARAM_N+i] = (unsigned char)e[k*PARAM_N+i];
   
-  memcpy(&isk[PARAM_K*PARAM_N], seeds, 2*CRYPTO_SEEDBYTES);
-} 
+  memcpy(&sk[PARAM_K*PARAM_N], seeds, 2*CRYPTO_SEEDBYTES);
+}
 
 
 void encode_pk(unsigned char *pk, const poly_k t, const unsigned char *seedA)

@@ -61,8 +61,8 @@ int64_t reduce(int64_t a)
 
 int64_t barr_reduce(int64_t a)
 { // Barrett reduction
-  int64_t u = ((a*PARAM_BARR_MULT)>>PARAM_BARR_DIV)*PARAM_Q;
-  return a-u;
+  int64_t u = (a*PARAM_BARR_MULT)>>PARAM_BARR_DIV;
+  return a - u*PARAM_Q;
 }
 
 
@@ -70,14 +70,20 @@ void ntt(poly a, const poly w)
 { // Forward NTT transform
   int NumoProblems = PARAM_N>>1, jTwiddle=0;
 
-  for ( ;NumoProblems>0; NumoProblems>>=1) {
+  for (; NumoProblems>0; NumoProblems>>=1) {
     int jFirst, j=0;
-    for(jFirst=0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
-      int64_t W = w[jTwiddle++];
+    for (jFirst=0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
+      sdigit_t W = (sdigit_t)w[jTwiddle++];
       for (j=jFirst; j<jFirst+NumoProblems; j++) {
-        int64_t temp = barr_reduce(reduce(W* a[j + NumoProblems]));
+#if defined(_qTESLA_p_I_)
+        int64_t temp = reduce((int64_t)W * a[j+NumoProblems]);
+        a[j + NumoProblems] = a[j] + (PARAM_Q - temp);
+        a[j] = temp + a[j];
+#else
+        int64_t temp = barr_reduce(reduce((int64_t)W* a[j + NumoProblems]));
         a[j + NumoProblems] = barr_reduce(a[j] +(2LL*PARAM_Q - temp));
         a[j] = barr_reduce(temp + a[j]);
+#endif
       }
     }
   }
@@ -90,11 +96,25 @@ void nttinv(poly a, const poly w)
   for (NumoProblems=1; NumoProblems<PARAM_N; NumoProblems*=2) {
     int jFirst, j=0;
     for (jFirst = 0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
-      int64_t W = w[jTwiddle++];
-      for(j=jFirst; j<jFirst+NumoProblems; j++) {
+      sdigit_t W = (sdigit_t)w[jTwiddle++];
+      for (j=jFirst; j<jFirst+NumoProblems; j++) {
         int64_t temp = a[j];
+#if defined(_qTESLA_p_I_)
+        a[j] = (temp + a[j + NumoProblems]);
+        a[j + NumoProblems] = reduce((int64_t)W * (temp + (2*PARAM_Q - a[j + NumoProblems])));
+      }
+    }
+    NumoProblems*=2;
+    for (jFirst = 0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
+      sdigit_t W = (sdigit_t)w[jTwiddle++];
+      for (j=jFirst; j<jFirst+NumoProblems; j++) {
+        int64_t temp = a[j];
+        a[j] = barr_reduce(temp + a[j + NumoProblems]);
+        a[j + NumoProblems] = reduce((int64_t)W * (temp + (2*PARAM_Q - a[j + NumoProblems])));
+#else
         a[j] = barr_reduce((temp + a[j + NumoProblems]));
-        a[j + NumoProblems] = barr_reduce(reduce(W * (temp + (2LL*PARAM_Q - a[j + NumoProblems]))));
+        a[j + NumoProblems] = barr_reduce(reduce((int64_t)W * (temp + (2LL*PARAM_Q - a[j + NumoProblems]))));
+#endif
       }
     }
   }
@@ -135,6 +155,17 @@ void poly_add(poly result, const poly x, const poly y)
 }
 
 
+void poly_add_correct(poly result, const poly x, const poly y)
+{ // Polynomial addition result = x+y with correction
+
+    for (int i=0; i<PARAM_N; i++) {
+      result[i] = x[i] + y[i];
+      result[i] -= PARAM_Q;
+      result[i] += (result[i] >> (RADIX32-1)) & PARAM_Q;    // If result[i] >= q then subtract q
+    }
+}
+
+
 void poly_sub(poly result, const poly x, const poly y)
 { // Polynomial subtraction result = x-y
 
@@ -147,7 +178,7 @@ void poly_sub(poly result, const poly x, const poly y)
 * Name:        sparse_mul8
 * Description: performs sparse polynomial multiplication
 * Parameters:  inputs:
-*              - const unsigned char* sk: part of the secret key
+*              - const unsigned char* s: part of the secret key
 *              - const uint32_t pos_list[PARAM_H]: list of indices of nonzero elements in c
 *              - const int16_t sign_list[PARAM_H]: list of signs of nonzero elements in c
 *              outputs:
@@ -155,10 +186,10 @@ void poly_sub(poly result, const poly x, const poly y)
 *
 * Note: pos_list[] and sign_list[] contain public information since c is public
 *********************************************************************************************/
-void sparse_mul8(poly prod, const unsigned char *sk, const uint32_t pos_list[PARAM_H], const int16_t sign_list[PARAM_H])
+void sparse_mul8(poly prod, const unsigned char *s, const uint32_t pos_list[PARAM_H], const int16_t sign_list[PARAM_H])
 {
   int i, j, pos;
-  int8_t *t = (int8_t*)sk;
+  int8_t *t = (int8_t*)s;
 
   for (i=0; i<PARAM_N; i++)
     prod[i] = 0;

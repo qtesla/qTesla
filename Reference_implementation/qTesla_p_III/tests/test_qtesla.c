@@ -23,7 +23,7 @@
 #endif
 
 #define MLEN 59
-#define NRUNS 1000
+#define NRUNS 5000
 #define NTESTS 100
 
 
