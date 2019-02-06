@@ -94,25 +94,25 @@
  * @param    g      the accompanying sampling order array to sort together.
  * @param    n      the array size.
  */
-static void knuthMergeExchangeKG(sdigit_t a[/*n*CDT_COLS*/], int32_t g[/*n*/], unsigned int n) 
+static void knuthMergeExchangeKG(sdigit_t a[/*n*CDT_COLS*/], int32_t g[/*n*/], size_t n) 
 {
-    unsigned int t = 1;      
+    size_t t = 1;      
     while (t < n - t) {
         t += t;
     }
-    for (unsigned int p = t; p > 0; p >>= 1) {
+    for (size_t p = t; p > 0; p >>= 1) {
         sdigit_t *ap = a + p*CDT_COLS;
         sdigit_t *a_i = a, *ap_i = ap;
         int32_t *gp = g + p;
-        for (unsigned int i = 0; i < (unsigned int)(n - p); i++, a_i += CDT_COLS, ap_i += CDT_COLS) {
+        for (size_t i = 0; i < n - p; i++, a_i += CDT_COLS, ap_i += CDT_COLS) {
             if (!(i & p)) {
                 MINIMAX(a_i, ap_i, g[i], gp[i]);
             }
         }
-        for (unsigned int q = t; q > p; q >>= 1) {
+        for (size_t q = t; q > p; q >>= 1) {
             sdigit_t *ap_i = ap, *aq_i = a + q*CDT_COLS;
             int32_t *gq = g + q;
-            for (unsigned int i = 0; i < (unsigned int)(n - q); i++, ap_i += CDT_COLS, aq_i += CDT_COLS) {
+            for (size_t i = 0; i < n - q; i++, ap_i += CDT_COLS, aq_i += CDT_COLS) {
                 if (!(i & p)) {
                     MINIMAX(ap_i, aq_i, gp[i], gq[i]);
                 }
@@ -134,10 +134,8 @@ static void knuthMergeExchangeKG(sdigit_t a[/*n*CDT_COLS*/], int32_t g[/*n*/], u
  * @param    a      the sampling order array to sort in-place.
  * @param    n      the array size.
  */
-static void knuthMergeExchangeG(int32_t a[/*n*/], size_t n) {
-    if (n <= 1) {
-        return;
-    }
+static void knuthMergeExchangeG(int32_t a[/*n*/], size_t n) 
+{
     size_t t = 1;
     while (t < n - t) {
         t += t;
