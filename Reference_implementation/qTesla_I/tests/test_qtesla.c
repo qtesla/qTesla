@@ -13,6 +13,7 @@
 #include "../pack.h"
 #include "../sample.h"
 #include "../params.h"
+#include "../gauss.h"
 #include "../sha3/fips202.h"
   
 #if (OS_TARGET == OS_LINUX)
@@ -171,7 +172,7 @@ void test_functions()
   
   for (i = 0; i < NRUNS; i++) {
     cycles0[i] = cpucycles();
-    hash_vm(c, v, hm);
+    hash_H(c, v, hm);
     cycles0[i] = cpucycles() - cycles0[i];
   }
   print_results("H: ", cycles0, NRUNS);
