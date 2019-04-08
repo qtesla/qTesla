@@ -1,0 +1,29 @@
+# Optimized implementation of qTESLA-V-size-s in portable C + some very limited use of x64 assembly (for the 
+# Barrett reduction in poly.c)
+
+# Linux
+
+To compile, do:
+
+make 
+
+which by default sets ARCH=x64, CC=gcc and DEBUG=FALSE, or do:
+
+make CC=[gcc/clang] DEBUG=[TRUE/FALSE]
+
+The following executables are generated: "test_qtesla-V-size-s", "PQCtestKAT_sign-V-size-s" and "PQCgenKAT_sign-V-size-s".
+
+To get cycle counts for key generation, signing and verification, execute:
+
+./test_qtesla-V-size-s
+
+To test against known answer values in the KAT folder, execute:
+
+./PQCtestKAT_sign-V-size-s
+
+To generate new KAT files, execute:
+
+./PQCgenKAT_sign-V-size-s
+
+Using DEBUG=TRUE generates statistics on acceptance rates and timings for internal functions. 
+

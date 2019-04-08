@@ -59,14 +59,13 @@ static __inline int32_t Abs(int32_t value)
 
 static int test_rejection(poly z)
 { // Check bounds for signature vector z during signing. Returns 0 if valid, otherwise outputs 1 if invalid (rejected).
-  // This function leaks the position of the coefficient that fails the test (but this is independent of the secret data). 
-  // It does not leak the sign of the coefficients.
+  // This function does not leak any information about the coefficient that fails the test.
+  uint32_t valid = 0;
 
   for (int i=0; i<PARAM_N; i++) {
-    if (Abs((int32_t)z[i]) > (PARAM_B-PARAM_U))
-      return 1;
+    valid |= (uint32_t)(PARAM_B-PARAM_S) - Abs((int32_t)z[i]);
   }
-  return 0;
+  return (int)(valid >> 31);
 }
 
 
@@ -81,14 +80,14 @@ static int test_correctness(poly v)
     // If v[i] > PARAM_Q/2 then v[i] -= PARAM_Q
     mask = (int32_t)(PARAM_Q/2 - v[i]) >> (RADIX32-1);
     val = ((v[i]-PARAM_Q) & mask) | (v[i] & ~mask);
-    // If (Abs(val) < PARAM_Q/2 - PARAM_REJECTION) then t0 = 0, else t0 = 1
-    t0 = (uint32_t)(~(Abs(val) - (PARAM_Q/2 - PARAM_REJECTION))) >> (RADIX32-1);
+    // If (Abs(val) < PARAM_Q/2 - PARAM_E) then t0 = 0, else t0 = 1
+    t0 = (uint32_t)(~(Abs(val) - (PARAM_Q/2 - PARAM_E))) >> (RADIX32-1);
                      
     left = val;
     val = (val + (1<<(PARAM_D-1))-1) >> PARAM_D; 
     val = left - (val << PARAM_D);
-    // If (Abs(val) < (1<<(PARAM_D-1))-PARAM_REJECTION) then t1 = 0, else t1 = 1 
-    t1 = (uint32_t)(~(Abs(val) - ((1<<(PARAM_D-1))-PARAM_REJECTION))) >> (RADIX32-1); 
+    // If (Abs(val) < (1<<(PARAM_D-1))-PARAM_E) then t1 = 0, else t1 = 1 
+    t1 = (uint32_t)(~(Abs(val) - ((1<<(PARAM_D-1))-PARAM_E))) >> (RADIX32-1); 
 
     if ((t0 | t1) == 1)  // Returns 1 if any of the two tests failed
       return 1;
@@ -103,7 +102,7 @@ static int test_z(poly z)
   unsigned int i;
   
   for (i=0; i<PARAM_N; i++) {                                  
-    if (z[i] < -(PARAM_B-PARAM_U) || z[i] > (PARAM_B-PARAM_U))
+    if (z[i] < -(PARAM_B-PARAM_S) || z[i] > (PARAM_B-PARAM_S))
       return 1;
   }
   return 0;

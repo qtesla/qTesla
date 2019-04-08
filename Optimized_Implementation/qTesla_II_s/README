@@ -1,0 +1,29 @@
+# Optimized implementation of qTESLA-II-s in portable C + some very limited use of x64 assembly (for the 
+# Barrett reduction in poly.c)
+
+# Linux
+
+To compile, do:
+
+make 
+
+which by default sets ARCH=x64, CC=gcc and DEBUG=FALSE, or do:
+
+make CC=[gcc/clang] DEBUG=[TRUE/FALSE]
+
+The following executables are generated: "test_qtesla-II-s", "PQCtestKAT_sign-II-s" and "PQCgenKAT_sign-II-s".
+
+To get cycle counts for key generation, signing and verification, execute:
+
+./test_qtesla-II-s
+
+To test against known answer values in the KAT folder, execute:
+
+./PQCtestKAT_sign-II-s
+
+To generate new KAT files, execute:
+
+./PQCgenKAT_sign-II-s
+
+Using DEBUG=TRUE generates statistics on acceptance rates and timings for internal functions. 
+

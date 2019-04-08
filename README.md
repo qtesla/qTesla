@@ -1,7 +1,8 @@
 # Lattice-based digital signature scheme **qTESLA**
 
-This is the software package of the post-quantum lattice-based digital signature
-scheme **qTESLA** for the NIST Post-Quantum Cryptography Standardization project. 
+This project is part of the submission of the post-quantum lattice-based digital signature
+scheme **qTESLA** to the NIST Post-Quantum Standardization
+project (2017). 
 
 **qTESLA** is a family of post-quantum signature schemes based on the hardness of the decisional
 Ring Learning With Errors (R-LWE) problem. 
@@ -19,9 +20,11 @@ Concretely, **qTESLA** includes five parameter sets targeting two security level
 
 I  Heuristic qTESLA:
 
-* qTESLA-I: NIST's security category 1.
-* qTESLA-III-speed: NIST's security category 3 (optimized for speed).
-* qTESLA-III-size: NIST's security category 3 (optimized for size).
+* qTESLA-I and qTESLA-I-s: NIST's security category 1.
+* qTESLA-II: NIST's security category 2.
+* qTESLA-III and qTESLA-III-s: NIST's security category 3.
+* qTESLA-V-size and qTESLA-V-size-s: NIST's security category 5 (option for size).
+* qTESLA-V and qTESLA-V-s: NIST's security category 5.
 
 II  Provably-secure qTESLA:
 
@@ -32,97 +35,185 @@ The full specification of the scheme can be found in the qTESLA [`website`](http
 
 ## Contents
 
-- [`KAT`](KAT/)                     : Contains the Known Answer Tests
-- [`Reference_implementation`](Reference_Implementation) : Contains the reference implementations
-- [`Additional_implementations/avx2`](AVX2_Implementation) : Contains the AVX2-optimized implementations
+
+- [`KAT`](KAT/):                      Contains the Known Answer Tests
+- [`Reference_implementation`](Reference_implementation/): Contains the reference implementation
+- [`Optimized_implementation`](Optimized_implementation/): Contains the optimized implementation
+- [`Additional_implementations`](Additional_implementation/): Contains AVX2 optimized implementations of the
+                              heuristic parameter sets for x64 platforms
 
 ## Contents of subfolders
 
 ### Subfolder `KAT`:
-This folder contains known answer test results for the proposed parameter sets, 
-classified by platform support (xx = 32 or 64 bits) and implementation (reference or AVX2).
+This folder contains known answer test results for the proposed parameter sets.
 
-- `ref/<KATxx>/PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
-- `ref/<KATxx>/PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
-- `ref/<KATxx>/PQCsignKAT_qTesla-III-speed.rsp` : Known answer test results for qTesla-III-speed
-- `ref/<KATxx>/PQCsignKAT_qTesla-p-I.rsp`: Known answer test results for qTesla-p-I
-- `ref/<KATxx>/PQCsignKAT_qTesla-p-III.rsp` : Known answer test results for qTesla-p-III
-- `avx2/<KATxx>/PQCsignKAT_qTesla-I.rsp` : Known answer test results for qTesla-I
-- `avx2/<KATxx>/PQCsignKAT_qTesla-III-size.rsp` : Known answer test results for qTesla-III-size
-- `avx2/<KATxx>/PQCsignKAT_qTesla-III-speed.rsp` : Known answer test results for qTesla-III-speed
+- `\ref\KAT32\PQCsignKAT_qTesla-I.rsp`   : Known answer test results for qTesla-I, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-II.rsp`  : Known answer test results for qTesla-III, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-III.rsp` : Known answer test results for qTesla-III, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-V.rsp`   : Known answer test results for qTesla-V, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-V-size.rsp` : Known answer test results for qTesla-V-size, 
+                                              32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-p-I.rsp` : Known answer test results for qTesla-p-I, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-p-III.rsp` : Known answer test results for qTesla-p-III, 
+                                             32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-I-s.rsp`   : Known answer test results for qTesla-I-s, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-II-s.rsp`  : Known answer test results for qTesla-III-s, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-III-s.rsp` : Known answer test results for qTesla-III-s, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-V-s.rsp`   : Known answer test results for qTesla-V-s, 
+                                           32-bit platforms
+- `\ref\KAT32\PQCsignKAT_qTesla-V-size-s.rsp` : Known answer test results for qTesla-V-size-s, 
+                                              32-bit platforms
+
+- `\ref\KAT64\PQCsignKAT_qTesla-I.rsp`   : Known answer test results for qTesla-I, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-II.rsp`  : Known answer test results for qTesla-II, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-III.rsp` : Known answer test results for qTesla-III, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-V.rsp`   : Known answer test results for qTesla-V, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-V-size.rsp` : Known answer test results for qTesla-V-size, 
+                                              64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-p-I.rsp` : Known answer test results for qTesla-p-I, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-p-III.rsp` : Known answer test results for qTesla-p-III, 
+                                             64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-I-s.rsp`   : Known answer test results for qTesla-I-s, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-II-s.rsp`  : Known answer test results for qTesla-II-s, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-III-s.rsp` : Known answer test results for qTesla-III-s, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-V-s.rsp`   : Known answer test results for qTesla-V-s, 
+                                           64-bit platforms
+- `\ref\KAT64\PQCsignKAT_qTesla-V-size-s.rsp` : Known answer test results for qTesla-V-size-s, 
+                                              64-bit platforms
+
+- `\avx2\KAT64\PQCsignKAT_qTesla-I.rsp`   : Known answer test results for qTesla-I,
+                                             additional AVX2 implementation
+- `\avx2\KAT64\PQCsignKAT_qTesla-III.rsp` : Known answer test results for qTesla-III,
+                                             additional AVX2 implementation
+- `\avx2\KAT64\PQCsignKAT_qTesla-V.rsp`   : Known answer test results for qTesla-V,
+                                             additional AVX2 implementation				
+- `\avx2\KAT64\PQCsignKAT_qTesla-I-s.rsp`   : Known answer test results for qTesla-I-s,
+                                             additional AVX2 implementation
+- `\avx2\KAT64\PQCsignKAT_qTesla-III-s.rsp` : Known answer test results for qTesla-III-s,
+                                             additional AVX2 implementation
+- `\avx2\KAT64\PQCsignKAT_qTesla-V-s.rsp`   : Known answer test results for qTesla-V-s,
+                                             additional AVX2 implementation
 
 ### Subfolder `Reference_Implementation`:
 This folder contains five subfolders which contain the reference implementations
+for the proposed parameter sets.
+
+- "qTesla-I"   : Reference implementation of qTesla-I with parameters for
+                 NIST’s security category 1
+- "qTesla-I-s"   : Reference implementation of qTesla-I-s with parameters for
+                 NIST’s security category 1
+- "qTesla-II"  : Reference implementation of qTesla-II with parameters for
+                 NIST’s security category 2
+- "qTesla-III" : Reference implementation of qTesla-III with parameters for
+                 NIST’s security category 3
+- "qTesla-III-s" : Reference implementation of qTesla-III-s with parameters for
+                 NIST’s security category 3
+- "qTesla-V"   : Reference implementation of qTesla-V with parameters for
+                 NIST’s security category 5
+- "qTesla-V-s"   : Reference implementation of qTesla-V-s with parameters for
+                 NIST’s security category 5
+- "qTesla-V-size" : Reference implementation of qTesla-V-size with parameters for
+                 NIST’s security category 5
+- "qTesla-V-size-s" : Reference implementation of qTesla-V-size-s with parameters for
+                 NIST’s security category 5
+- "qTesla-p-I" : Reference implementation of qTesla-p-I with parameters for
+                 NIST’s security category 1
+- "qTesla-p-III" : Reference implementation of qTesla-p-III with parameters for
+                   NIST’s security category 3
+
+### Subfolder `Optimized_implementation`:
+This folder contains the following subfolders which contain the optimized implementations
 for the proposed parameter sets:
 
-- "qTesla-I" : Reference implementation of qTesla-I with parameters for
-               NIST’s security category 1
-- "qTesla-III-size" : Reference implementation of qTesla-III-size with parameters for
-               NIST’s security category 3
-- "qTesla-III-speed" : Reference implementation of qTesla-III-speed with parameters for
-               NIST’s security category 3
-- "qTesla-p-I" : Reference implementation of qTesla-p-I with parameters for
-               NIST’s security category 1
-- "qTesla-p-III" : Reference implementation of qTesla-p-III with parameters for
-               NIST’s security category 3
+- "qTesla-II"       : Optimized implementation of qTesla-II with parameters for
+                    NIST’s security category 2
+- "qTesla-II-s"     : Optimized implementation of qTesla-II-s with parameters for
+                    NIST’s security category 2
+- "qTesla-V-size"   : Optimized implementation of qTesla-V-size with parameters for
+                    NIST’s security category 5
+- "qTesla-V-size-s" : Optimized implementation of qTesla-V-size-s with parameters for
+                    NIST’s security category 5
 
-### Subfolder `Additional_Implementations/avx2`:
-This folder contains three subfolders which contain the additional AVX2 implementations
-for the heuristic parameter sets:
+These implementations are written in C plus a reduction routine written in x64 assembly.
+For all the other parameter sets, the reference implementation is the optimized 
+implementation for this version of the software. 
 
-- "qTesla-I" : AVX2 implementation of qTesla-I with parameters for
-               NIST’s security category 1
-- "qTesla-III-size" : AVX2 implementation of qTesla-III-size with parameters for
-               NIST’s security category 3
-- "qTesla-III-speed" : AVX2 implementation of qTesla-III-speed with parameters for
-               NIST’s security category 3
+### Subfolder `Additional_implementations\avx2`:
+This folder contains the following subfolders which contain the AVX2-optimized 
+x64 implementations for the proposed heuristic parameter sets:
 
-## Instructions for Linux
+- "qTesla-I"     : Additional AVX2 implementation of qTesla-I with parameters for
+                 NIST’s security category 1
+- "qTesla-I-s"   : Additional AVX2 implementation of qTesla-I-s with parameters for
+                 NIST’s security category 1
+- "qTesla-III"   : Additional AVX2 implementation of qTesla-III with parameters for
+                 NIST’s security category 3
+- "qTesla-III-s" : Additional AVX2 implementation of qTesla-III-s with parameters for
+                 NIST’s security category 3
+- "qTesla-V"     : Additional AVX2 implementation of qTesla-V with parameters for
+                 NIST’s security category 5
+- "qTesla-V-s"   : Additional AVX2 implementation of qTesla-V-s with parameters for
+                 NIST’s security category 5
 
-Each implementation directory has its own makefile, and can be compiled by executing,
-for the reference implementations:
 
-```sh
-$ cd Reference_implementation/qTesla_{SET}
-$ make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
-```
+## Instructions for linux
 
-For the AVX2 implementations: 
-
-```sh
-$ cd Additional_implementations/avx2/qTesla_{SET}
-$ make CC=[gcc/clang] DEBUG=[TRUE/FALSE]
-```
-
-By default (i.e., just running "make"), the compilation is done with gcc for x64, 
-DEBUG=FALSE. Testing and benchmarking results can be seen by running the command:
+Each implementation directory has its own makefile, and can be compiled by executing
 
 ```sh
-$ ./test_qtesla-{SET}
+$ make
 ```
-where {SET} is one of the parameter set options I, III-speed, III-size, p-I or p-III.
+
+By default compilation is done with gcc. Testing and benchmarking results can be seen
+by running the command:
+
+```sh
+$ ./test_qtesla
+```
 
 This outputs key and signature sizes, and cycle counts for key generation, signing,
 and verification.
 
-If compilation is done with DEBUG=TRUE, executing test_qtesla-{SET} additionally 
-outputs acceptance probabilities during key generation and signing.
+If compilation is done with
+
+```sh
+$ make DEBUG=TRUE
+```
+
+executing test_qtesla additionally outputs acceptance probabilities during key
+generation and signing.
 
 KAT files can be generated by executing:
 
 ```sh
-./PQCgenKAT_sign-{SET}
+./PQCgenKAT_sign
 ```
 
 Precomputed KAT values can be tested against the code by executing:
 
 ```sh
-./PQCtestKAT_sign-{SET}
+./PQCtestKAT_sign
 ```
 
 ## License
 
-This software is licensed under the MIT License; see [`License`](LICENSE) for details.
+The qTESLA source code and header files are released to the public domain.
 The software also includes third-party code licensed as follows:
 
 - `src/sha3/fips202.c`: public domain

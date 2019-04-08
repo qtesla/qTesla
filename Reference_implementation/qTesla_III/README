@@ -1,0 +1,29 @@
+# Reference implementation of qTESLA-III in portable C
+
+# Linux
+
+To compile, do:
+
+make 
+
+which by default sets ARCH=x64, CC=gcc and DEBUG=FALSE, or do:
+
+make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
+
+The following executables are generated: "test_qtesla-III", "PQCtestKAT_sign-III"
+and "PQCgenKAT_sign-III".
+
+To get cycle counts for key generation, signing and verification, execute:
+
+./test_qtesla-III
+
+To test against known answer values in the KAT folder, execute:
+
+./PQCtestKAT_sign-III
+
+To generate new KAT files, execute:
+
+./PQCgenKAT_sign-III
+
+Using DEBUG=TRUE generates statistics on acceptance rates and timings for internal functions. 
+

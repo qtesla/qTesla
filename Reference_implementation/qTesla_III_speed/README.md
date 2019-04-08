@@ -1,29 +1,22 @@
-# Reference implementation of qTESLA-III-speed in portable C
+# Reference implementation for qTESLA-III-speed
 
-# Linux
+To compile:
 
-To compile, do:
+make
 
-make 
-
-which by default sets ARCH=x64, CC=gcc and DEBUG=FALSE, or do:
-
-make ARCH=[x64/x86/ARM/ARM64] CC=[gcc/clang] DEBUG=[TRUE/FALSE]
-
-The following executables are generated: "test\_qtesla-III-speed", "PQCtestKAT\_sign-III-speed"
-and "PQCgenKAT\_sign-III-speed".
+This generates three executables "test\_qtesla", "PQCtestKAT\_sign" and "PQCgenKAT\_sign".
 
 To get cycle counts for key generation, signing and verification, execute:
 
-./test\_qtesla-III-speed
+./test\_qtesla
 
 To test against known answer values in the KAT folder, execute:
 
-./PQCtestKAT\_sign-III-speed
+./PQCtestKAT\_sign
 
 To generate new KAT files, execute:
 
-./PQCgenKAT\_sign-III-speed
+./PQCgenKAT\_sign
 
-Using DEBUG=TRUE generates statistics on acceptance rates and timings for internal functions. 
+
 
