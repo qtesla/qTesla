@@ -4,7 +4,7 @@
 #include "poly.h"
 #include <stdint.h>
 
-void hash_vm(unsigned char *c_bin, poly v, const unsigned char *hm);
+void hash_H(unsigned char *c_bin, poly v, const unsigned char *hm);
 void encode_sk(unsigned char *sk, const poly s, const poly e, const unsigned char *seeds);
 void decode_sk(unsigned char *seeds, int16_t *s, int16_t *e, const unsigned char *sk);
 void encode_pk(unsigned char *pk, const poly t, const unsigned char *seedA);
