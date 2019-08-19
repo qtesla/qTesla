@@ -15,7 +15,7 @@
 #include "sha3/fips202.h"
 #include "random/random.h"
 
-#ifdef DEBUG
+#ifdef STATS
 unsigned long long rejwctr;
 unsigned long long rejyzctr;
 unsigned long long ctr_keygen;
@@ -52,7 +52,7 @@ void hash_H(unsigned char *c_bin, poly_k v, const unsigned char *hm)
 static __inline int32_t Abs(int32_t value)
 { // Compute absolute value
 
-    int32_t mask = (value >> (RADIX32-1));
+    int32_t mask = value >> (RADIX32-1);
     return ((mask ^ value) - mask);
 }
 
@@ -99,9 +99,8 @@ static int test_correctness(poly v)
 static int test_z(poly z)
 { // Check bounds for signature vector z during signature verification
   // Returns 0 if valid, otherwise outputs 1 if invalid (rejected)
-  unsigned int i;
   
-  for (i=0; i<PARAM_N; i++) {                                  
+  for (int i=0; i<PARAM_N; i++) {                                  
     if (z[i] < -(PARAM_B-PARAM_S) || z[i] > (PARAM_B-PARAM_S))
       return 1;
   }
@@ -151,7 +150,7 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
   poly s, s_ntt;
   poly_k e, a, t;
   int k, nonce = 0;  // Initialize domain separator for error and secret polynomials
-#ifdef DEBUG
+#ifdef STATS
   ctr_keygen=0;  
 #endif
 
@@ -161,19 +160,19 @@ int crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 
   for (k=0; k<PARAM_K; k++) {
     do {  // Sample the error polynomials
-#ifdef DEBUG
+#ifdef STATS
   ctr_keygen++;
 #endif
       sample_gauss_poly(&e[k*PARAM_N], &randomness_extended[k*CRYPTO_SEEDBYTES], ++nonce);       
-    } while(check_ES(&e[k*PARAM_N], (int)PARAM_KEYGEN_BOUND_E) != 0); 
+    } while(check_ES(&e[k*PARAM_N], PARAM_KEYGEN_BOUND_E) != 0); 
   }
   
   do {  // Sample the secret polynomial 
-#ifdef DEBUG
+#ifdef STATS
   ctr_keygen++;
 #endif
     sample_gauss_poly(s, &randomness_extended[PARAM_K*CRYPTO_SEEDBYTES], ++nonce);
-  } while(check_ES(s, (int)PARAM_KEYGEN_BOUND_S) != 0);
+  } while(check_ES(s, PARAM_KEYGEN_BOUND_S) != 0);
 
   // Generate uniform polynomial "a"
   poly_uniform(a, &randomness_extended[(PARAM_K+1)*CRYPTO_SEEDBYTES]);
@@ -212,9 +211,8 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen, const unsigned cha
   int16_t sign_list[PARAM_H];
   poly y, y_ntt, Sc, z; 
   poly_k v, Ec, a;
-  unsigned int k;
-  int rsp, nonce = 0;  // Initialize domain separator for sampling y 
-#ifdef DEBUG
+  int k, rsp, nonce = 0;  // Initialize domain separator for sampling y 
+#ifdef STATS
   ctr_sign=0;
   rejwctr=0;
   rejyzctr=0;
@@ -229,7 +227,7 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen, const unsigned cha
   poly_uniform(a, &sk[CRYPTO_SECRETKEYBYTES-2*CRYPTO_SEEDBYTES]);
 
   while (1) {
-#ifdef DEBUG
+#ifdef STATS
   ctr_sign++;
 #endif
     sample_y(y, randomness, ++nonce);           // Sample y uniformly at random from [-B,B]
@@ -242,7 +240,7 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen, const unsigned cha
     poly_add(z, y, Sc);                         // Compute z = y + sc
     
     if (test_rejection(z) != 0) {               // Rejection sampling
-#ifdef DEBUG
+#ifdef STATS
   rejyzctr++;
 #endif
       continue;
@@ -253,7 +251,7 @@ int crypto_sign(unsigned char *sm, unsigned long long *smlen, const unsigned cha
       poly_sub(&v[k*PARAM_N], &v[k*PARAM_N], &Ec[k*PARAM_N]);
       rsp = test_correctness(&v[k*PARAM_N]);
       if (rsp != 0) {
-#ifdef DEBUG
+#ifdef STATS
   rejwctr++;
 #endif
         break;
@@ -292,9 +290,9 @@ int crypto_sign_open(unsigned char *m, unsigned long long *mlen, const unsigned 
   uint32_t pos_list[PARAM_H];
   int16_t sign_list[PARAM_H]; 
   int32_t pk_t[PARAM_N*PARAM_K];
-  unsigned int k;
   poly_k w, a, Tc;
   poly z, z_ntt;
+  int k;
 
   if (smlen < CRYPTO_BYTES) return -1;
 
@@ -306,8 +304,8 @@ int crypto_sign_open(unsigned char *m, unsigned long long *mlen, const unsigned 
   poly_ntt(z_ntt, z);
 
   for (k=0; k<PARAM_K; k++) {      // Compute w = az - tc
+    sparse_mul32(&Tc[k*PARAM_N], &pk_t[k*PARAM_N], pos_list, sign_list);
     poly_mul(&w[k*PARAM_N], &a[k*PARAM_N], z_ntt);
-    sparse_mul32(&Tc[k*PARAM_N], pk_t+(k*PARAM_N), pos_list, sign_list);
     poly_sub(&w[k*PARAM_N], &w[k*PARAM_N], &Tc[k*PARAM_N]);
   }    
   SHAKE(hm, HM_BYTES, sm+CRYPTO_BYTES, smlen-CRYPTO_BYTES);

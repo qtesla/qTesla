@@ -24,7 +24,7 @@
 
 #define MLEN 59
 #define NRUNS 5000
-#define NTESTS 100
+#define NTESTS 10000
 
 
 static int cmp_llu(const void *a, const void*b)
@@ -77,7 +77,7 @@ extern unsigned long long ctr_keygen;
 extern unsigned long long ctr_sign;
 
 
-#ifdef DEBUG  
+#ifdef STATS  
 
 int print_accrates()
 {
@@ -129,7 +129,7 @@ int main(void)
   printf("CRYPTO_SECRETKEY_BYTES: %d\n", (int)CRYPTO_SECRETKEYBYTES);
   printf("CRYPTO_SIGNATURE_BYTES: %d\n\n", CRYPTO_BYTES);
 
-#ifdef DEBUG  
+#ifdef STATS  
   print_accrates();
 #endif
 

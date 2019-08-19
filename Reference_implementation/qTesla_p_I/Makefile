@@ -29,8 +29,8 @@ ifeq "$(CC)" "gcc"
 endif
 
 DFLAG=
-ifeq "$(DEBUG)" "TRUE"
-    DFLAG=-DDEBUG
+ifeq "$(STATS)" "TRUE"
+    DFLAG=-DSTATS
 endif
 
 OBJECTS_p_I = objs_p_I/sign.o objs_p_I/pack.o objs_p_I/sample.o objs_p_I/gauss.o objs_p_I/poly.o objs_p_I/consts.o objs/fips202.o objs/random.o

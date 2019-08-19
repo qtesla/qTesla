@@ -16,7 +16,7 @@
 void sample_y(poly y, const unsigned char *seed, int nonce)
 { // Sample polynomial y, such that each coefficient is in the range [-B,B]
   unsigned int i=0, pos=0, nblocks = PARAM_N;
-  unsigned char buf[PARAM_N*BPLUS1BYTES];
+  unsigned char buf[PARAM_N*BPLUS1BYTES + 1];
   unsigned int nbytes = BPLUS1BYTES;
   int16_t dmsp = (int16_t)(nonce<<8);
     
