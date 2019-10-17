@@ -23,7 +23,7 @@ void pack_sk(unsigned char *sk, poly s, poly_k e, unsigned char *seeds)
       sk[k*PARAM_N+i] = (unsigned char)e[k*PARAM_N+i];
   
   memcpy(&sk[PARAM_K*PARAM_N], seeds, 2*CRYPTO_SEEDBYTES);
-} 
+}
 
 #if defined(_qTESLA_p_I_)
 
@@ -103,7 +103,7 @@ void decode_pk(int32_t *pk, unsigned char *seedA, const unsigned char *pk_in)
 void encode_sig(unsigned char *sm, unsigned char *c, poly z)
 { // Encode signature sm
   unsigned int i, j=0;
-  uint64_t *t = (uint64_t*)z;
+  uint32_t *t = (uint32_t*)z;
   uint32_t *pt = (uint32_t*)sm;
   
   for (i=0; i<(PARAM_N*(PARAM_B_BITS+1)/32); i+=10) {
@@ -214,7 +214,7 @@ void decode_pk(int32_t *pk, unsigned char *seedA, const unsigned char *pk_in)
 void encode_sig(unsigned char *sm, unsigned char *c, poly z)
 { // Encode signature sm
   unsigned int i, j=0;
-  uint64_t *t = (uint64_t*)z;
+  uint32_t *t = (uint32_t*)z;
   uint32_t *pt = (uint32_t*)sm;
   
   for (i=0; i<(PARAM_N*(PARAM_B_BITS+1)/32); i+=11) {
