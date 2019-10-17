@@ -48,41 +48,49 @@ void poly_uniform(poly_k a, const unsigned char *seed)
 }
 
 
-int64_t reduce(int64_t a)
+int32_t reduce(int64_t a)
 { // Montgomery reduction
   int64_t u;
 
   u = (a*PARAM_QINV) & 0xFFFFFFFF;
   u *= PARAM_Q;
   a += u;
-  return a>>32;
+  return (int32_t)(a>>32);
 }
 
 
-int64_t barr_reduce(int64_t a)
+int64_t barr_reduce64(int64_t a)
 { // Barrett reduction
   int64_t u = (a*PARAM_BARR_MULT)>>PARAM_BARR_DIV;
   return a - u*PARAM_Q;
 }
 
 
+sdigit_t barr_reduce(sdigit_t a)
+{ // Barrett reduction
+  digit_t u = ((int64_t)a*PARAM_BARR_MULT)>>PARAM_BARR_DIV;
+  return a - (digit_t)u*PARAM_Q;
+}
+
+
 void ntt(poly a, const poly w)
 { // Forward NTT transform
   int NumoProblems = PARAM_N>>1, jTwiddle=0;
-
+  
   for (; NumoProblems>0; NumoProblems>>=1) {
     int jFirst, j=0;
     for (jFirst=0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
       sdigit_t W = (sdigit_t)w[jTwiddle++];
       for (j=jFirst; j<jFirst+NumoProblems; j++) {
+        int32_t temp = reduce((int64_t)W * a[j+NumoProblems]);
 #if defined(_qTESLA_p_I_)
-        int64_t temp = reduce((int64_t)W * a[j+NumoProblems]);
-        a[j + NumoProblems] = a[j] + (PARAM_Q - temp);
-        a[j] = temp + a[j];
+        a[j + NumoProblems] = a[j] - temp;
+        a[j + NumoProblems] += (a[j + NumoProblems] >> (RADIX32-1)) & PARAM_Q;    // If result < 0 then add q
+        a[j] = a[j] + temp - PARAM_Q;
+        a[j] += (a[j] >> (RADIX32-1)) & PARAM_Q;                                  // If result >= q then subtract q
 #else
-        int64_t temp = barr_reduce(reduce((int64_t)W* a[j + NumoProblems]));
-        a[j + NumoProblems] = barr_reduce(a[j] +(2LL*PARAM_Q - temp));
-        a[j] = barr_reduce(temp + a[j]);
+        a[j + NumoProblems] = (int32_t)barr_reduce(a[j] - temp);
+        a[j] = (int32_t)barr_reduce(temp + a[j]);
 #endif
       }
     }
@@ -98,34 +106,20 @@ void nttinv(poly a, const poly w)
     for (jFirst = 0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
       sdigit_t W = (sdigit_t)w[jTwiddle++];
       for (j=jFirst; j<jFirst+NumoProblems; j++) {
-        int64_t temp = a[j];
-#if defined(_qTESLA_p_I_)
-        a[j] = (temp + a[j + NumoProblems]);
-        a[j + NumoProblems] = reduce((int64_t)W * (temp + (2*PARAM_Q - a[j + NumoProblems])));
-      }
-    }
-    NumoProblems*=2;
-    for (jFirst = 0; jFirst<PARAM_N; jFirst=j+NumoProblems) {
-      sdigit_t W = (sdigit_t)w[jTwiddle++];
-      for (j=jFirst; j<jFirst+NumoProblems; j++) {
-        int64_t temp = a[j];
-        a[j] = barr_reduce(temp + a[j + NumoProblems]);
-        a[j + NumoProblems] = reduce((int64_t)W * (temp + (2*PARAM_Q - a[j + NumoProblems])));
-#else
-        a[j] = barr_reduce((temp + a[j + NumoProblems]));
-        a[j + NumoProblems] = barr_reduce(reduce((int64_t)W * (temp + (2LL*PARAM_Q - a[j + NumoProblems]))));
-#endif
+        int32_t temp = a[j];
+        a[j] = (int32_t)barr_reduce(temp + a[j + NumoProblems]);
+        a[j + NumoProblems] = reduce((int64_t)W * (temp - a[j + NumoProblems]));
       }
     }
   }
 }
 
 
-void poly_pointwise(poly result, const poly x, const poly y)
+static void poly_pointwise(poly result, const poly x, const poly y)
 { // Pointwise polynomial multiplication result = x.y
 
   for (int i=0; i<PARAM_N; i++)
-    result[i] = reduce(x[i]*y[i]);
+    result[i] = reduce((int64_t)x[i]*y[i]);
 }
 
 
@@ -160,6 +154,7 @@ void poly_add_correct(poly result, const poly x, const poly y)
 
     for (int i=0; i<PARAM_N; i++) {
       result[i] = x[i] + y[i];
+      result[i] += (result[i] >> (RADIX32-1)) & PARAM_Q;    // If result[i] < 0 then add q
       result[i] -= PARAM_Q;
       result[i] += (result[i] >> (RADIX32-1)) & PARAM_Q;    // If result[i] >= q then subtract q
     }
@@ -170,7 +165,15 @@ void poly_sub(poly result, const poly x, const poly y)
 { // Polynomial subtraction result = x-y
 
     for (int i=0; i<PARAM_N; i++)
-      result[i] = barr_reduce(x[i] - y[i]);
+      result[i] = x[i] - y[i];
+}    
+
+
+void poly_sub_reduce(poly result, const poly x, const poly y)
+{ // Polynomial subtraction result = x-y
+
+    for (int i=0; i<PARAM_N; i++)
+      result[i] = (int32_t)barr_reduce(x[i] - y[i]);
 }
 
 
@@ -219,19 +222,17 @@ void sparse_mul8(poly prod, const unsigned char *s, const uint32_t pos_list[PARA
 void sparse_mul32(poly prod, const int32_t *pk, const uint32_t pos_list[PARAM_H], const int16_t sign_list[PARAM_H])
 {
   int i, j, pos;
-
-  for (i=0; i<PARAM_N; i++)
-    prod[i] = 0;
+  int64_t temp[PARAM_N] = {0};
   
   for (i=0; i<PARAM_H; i++) {
     pos = pos_list[i];
     for (j=0; j<pos; j++) {
-        prod[j] = prod[j] - sign_list[i]*pk[j+PARAM_N-pos];
+        temp[j] = temp[j] - sign_list[i]*pk[j+PARAM_N-pos];
     }
     for (j=pos; j<PARAM_N; j++) {
-        prod[j] = prod[j] + sign_list[i]*pk[j-pos];
+        temp[j] = temp[j] + sign_list[i]*pk[j-pos];
     }
   }
   for (i=0; i<PARAM_N; i++)
-    prod[i] = barr_reduce(prod[i]);
+    prod[i] = (int32_t)barr_reduce64(temp[i]);
 }
