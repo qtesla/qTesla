@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 
-#define CRYPTO_ALGNAME "qTesla-I"
+#define CRYPTO_ALGNAME "qTesla-p-I"
 
 #define CRYPTO_RANDOMBYTES 32
 #define CRYPTO_SEEDBYTES 32
