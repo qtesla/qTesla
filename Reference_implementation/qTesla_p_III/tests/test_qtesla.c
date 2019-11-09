@@ -4,6 +4,7 @@
 * Abstract: testing and benchmarking code
 **************************************************************************************/
 
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "../random/random.h"
@@ -13,6 +14,7 @@
 #include "../pack.h"
 #include "../sample.h"
 #include "../params.h"
+#include "../gauss.h"
 #include "../sha3/fips202.h"
   
 #if (OS_TARGET == OS_LINUX)
@@ -66,7 +68,7 @@ static void print_results(const char *s, unsigned long long *t, size_t tlen)
 
 unsigned char mi[MLEN];
 unsigned char mo[MLEN+CRYPTO_BYTES];
-unsigned char sm[MLEN+CRYPTO_BYTES];
+unsigned char sm[MLEN+CRYPTO_BYTES], sm_t[MLEN+CRYPTO_BYTES];
 unsigned char pk[CRYPTO_PUBLICKEYBYTES];
 unsigned char sk[CRYPTO_SECRETKEYBYTES];
 unsigned long long smlen, mlen;
@@ -110,6 +112,164 @@ int print_accrates()
   return 0;
 }
 
+
+void test_functions()
+{
+  unsigned int i;
+  unsigned long long cycles0[NRUNS];
+  int nonce;
+  poly t, a, s, e, y, y_ntt, v, z;
+  unsigned char randomness[CRYPTO_RANDOMBYTES]; 
+  unsigned char c[CRYPTO_C_BYTES], seed[2*CRYPTO_SEEDBYTES], randomness_extended[4*CRYPTO_SEEDBYTES];
+  unsigned char hm[HM_BYTES], ss[PARAM_N];
+  unsigned char sk[CRYPTO_SECRETKEYBYTES];
+  uint32_t pos_list[PARAM_H];
+  int16_t sign_list[PARAM_H], ee[PARAM_N]; 
+  int32_t pk_t[PARAM_N];
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    randombytes(randomness, CRYPTO_RANDOMBYTES);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("randombytes: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    SHAKE(randomness_extended, 4*CRYPTO_SEEDBYTES, randomness, CRYPTO_RANDOMBYTES);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("SHAKE: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    SHAKE(randomness_extended, HM_BYTES, mi, MLEN);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("SHAKE: ", cycles0, NRUNS);
+
+  nonce = 0;
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    sample_gauss_poly(e, randomness, nonce++);     
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("GaussSampler: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_uniform(a, randomness);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("GenA: ", cycles0, NRUNS);
+  
+  nonce = 0;
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    sample_y(y, randomness, nonce++); 
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("ySampler: ", cycles0, NRUNS);
+  
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    hash_H(c, v, hm);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("H: ", cycles0, NRUNS);
+  
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    encode_c(pos_list, sign_list, c); 
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Enc: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    sparse_mul8(t, ss, pos_list, sign_list);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Sparse mul8: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    sparse_mul32(t, pk_t, pos_list, sign_list);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Sparse mul32: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_ntt(y_ntt, y);
+    poly_mul(t, a, y_ntt);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Poly mul: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_add(t, a, t);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Poly add: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_add_correct(t, a, t);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Poly add with correction: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_sub(t, a, t);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Poly sub: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    poly_sub_reduce(t, a, t);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Poly sub with reduction: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    encode_pk(pk, t, seed);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Encode pk: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    decode_pk(pk_t, seed, pk);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Decode pk: ", cycles0, NRUNS);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    encode_sig(sm, c, z);
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Encode sig: ", cycles0, NRUNS);
+  
+  randombytes(mi, MLEN);
+  crypto_sign_keypair(pk, sk);
+  crypto_sign(sm, &smlen, mi, MLEN, sk);
+
+  for (i = 0; i < NRUNS; i++) {
+    cycles0[i] = cpucycles();
+    decode_sig(c, z, sm); 
+    cycles0[i] = cpucycles() - cycles0[i];
+  }
+  print_results("Decode sig: ", cycles0, NRUNS);
+ 
+  printf("\n");
+}
+
 #endif
 
 
@@ -131,6 +291,7 @@ int main(void)
 
 #ifdef STATS  
   print_accrates();
+  test_functions();
 #endif
 
   for (i = 0; i < NRUNS; i++) {
@@ -165,10 +326,20 @@ int main(void)
 
     // Change something in the signature somewhere    
     randombytes(&r, 1);
-    sm[r % (MLEN+CRYPTO_BYTES)] ^= 1;
-    response = crypto_sign_open(mo, &mlen, sm, smlen, pk);
+    memcpy(sm_t, sm, MLEN+CRYPTO_BYTES);
+    sm_t[r % (MLEN+CRYPTO_BYTES)] ^= 1;
+    response = crypto_sign_open(mo, &mlen, sm_t, smlen, pk);
     if (response == 0) {
       printf("Corrupted signature VERIFIED. \n");
+      return -1;
+    }
+
+    // Change something in the public key somewhere    
+    randombytes(&r, 1);
+    pk[r % (MLEN+CRYPTO_BYTES)] ^= 1;
+    response = crypto_sign_open(mo, &mlen, sm, smlen, pk);
+    if (response == 0) {
+      printf("Corrupted public key used to VERIFY signature. \n");
       return -1;
     }
   }

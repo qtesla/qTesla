@@ -12,6 +12,7 @@
 
 
 // Sigma = 8.5, 64-bit precision
+// memory requirements: 624 bytes
 
 #define CDT_ROWS 78
 #define CDT_COLS 2
@@ -95,16 +96,6 @@ static const int32_t cdt_v[CDT_ROWS*CDT_COLS] = {
     0x7FFFFFFFL, 0x7FFFFFF8L, // 75
     0x7FFFFFFFL, 0x7FFFFFFDL, // 76
     0x7FFFFFFFL, 0x7FFFFFFFL, // 77
-}; // cdt_v
-
-// memory requirements:
-//     2048 samples: 25512 bytes
-//     1024 samples: 13224 bytes
-//      512 samples:  7080 bytes
-//      256 samples:  4008 bytes
-//      128 samples:  2472 bytes
-//       64 samples:  1704 bytes
-//       32 samples:  1320 bytes
-// table alone: 624 bytes
+};
 
 #endif 
